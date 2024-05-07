@@ -1,0 +1,42 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId}/entries/{entryId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /entries/{entryId} {
+      allow read, write: if true;
+    }
+    match /reports/{reportId} {
+      allow read, write: if true;
+    }
+        match /reports/{reportId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read and write the "notifications" collection for their own user
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, write: if true;
+    }
+    
+    match /{database}/documents {
+    allow read, write: if request.auth != null && request.auth.uid != null;
+
+    // Allow requests from localhost
+    allow list, get: if request.origin == "http://localhost:3000";
+    }
+    
+    // Allow read and write from localhost for development purposes
+    match /{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid != null && request.origin == "http://localhost:3000";
+    }
+  }
+}
