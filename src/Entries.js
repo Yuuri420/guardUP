@@ -106,28 +106,28 @@ function Entries({ db }) {
       let filteredQuery = query(entriesRef, orderBy('timestamp', 'desc'));
 
       if (buildingCodeFilter !== '') {
-        filteredQuery = query(filteredQuery, where('buildingCode', '==', buildingCodeFilter));
+        filteredQuery = query(filteredQuery, where('buildingCode', '==', buildingCodeFilter), orderBy("timestamp", "desc"));
       }
 
       if (startDateFilter !== '') {
         const startDate = new Date(startDateFilter);
         startDate.setHours(0, 0, 0, 0);
-        filteredQuery = query(filteredQuery, where('timestamp', '>=', startDate));
+        filteredQuery = query(filteredQuery, where('timestamp', '>=', startDate), orderBy("timestamp", "desc"));
       }
 
       if (endDateFilter !== '') {
         const endDate = new Date(endDateFilter);
         endDate.setHours(23, 59, 59, 999);
-        filteredQuery = query(filteredQuery, where('timestamp', '<=', endDate));
+        filteredQuery = query(filteredQuery, where('timestamp', '<=', endDate), orderBy("timestamp", "desc"));
       } else {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 7);
         startDate.setHours(0, 0, 0, 0);
-        filteredQuery = query(filteredQuery, where('timestamp', '>=', startDate));
+        filteredQuery = query(filteredQuery, where('timestamp', '>=', startDate), orderBy("timestamp", "desc"));
       }
 
       if (userEmailFilter !== '') {
-        filteredQuery = query(filteredQuery, where('userEmail', '==', userEmailFilter));
+        filteredQuery = query(filteredQuery, where('userEmail', '==', userEmailFilter), orderBy("timestamp", "desc"));
       }
 
       const querySnapshot = await getDocs(filteredQuery);

@@ -17,7 +17,7 @@ body {
 
 .menu-panel {
   width: 220px;
-  background-color: #991232;
+  background-color: #121212;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -83,26 +83,24 @@ nav li {
 
 nav a {
   display: block;
-  padding: 13px 95px;
-  color: #f9f9f9;
+  padding: 8px 80px;
+  color: #f5f5f5;
   text-decoration: none;
   font-weight: bold;
   font-size: 18px;
   transition: margin-right 2s ease-in-out;
-  border-radius: 30px;
+  border-radius: 7px;
   background-color: transparent; /* Set the initial background color to transparent */
   position: relative; /* Add this to make the position relative */
 }
 
 nav a:hover,
 nav a.active {
-  background-color: #f9f9f9; /* Set the background color to match the content background */
+  background-color: #393939; /* Set the background color to match the content background */
   box-shadow: none; /* Remove the box shadow on hover */
-  color: #991232; /* Set the color to pink */
-  border-top-right-radius: 0; /* Extend the box up to the right */
-  border-bottom-right-radius: 0;
-  right: -20px; /* Adjust the value to extend to the right */
-  padding-right: 105px; /* Increase the right padding to spread out the background */
+  color: #f5f5f5; /* Set the color to pink */
+  /* right: -20px; Adjust the value to extend to the right */
+  /* padding-right: 105px; Increase the right padding to spread out the background */
 }
 
 
