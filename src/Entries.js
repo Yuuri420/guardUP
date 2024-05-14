@@ -197,6 +197,10 @@ function Entries({ db }) {
           <input type="date" value={endDateFilter} onChange={(e) => setEndDateFilter(e.target.value)} />
         </label>
         <label>
+          User Email
+          <input type="text" value={userEmailFilter} onChange={(e) => setUserEmailFilter(e.target.value)}/>
+        </label>
+        {/* <label>
           User Email:
           <select value={userEmailFilter} onChange={(e) => setUserEmailFilter(e.target.value)}>
             <option value="">All</option>
@@ -206,7 +210,7 @@ function Entries({ db }) {
               </option>
             ))}
           </select>
-        </label>
+        </label> */}
         <button onClick={fetchEntries}>Apply Filters</button>
         <PDFDownloadLink document={<PDFReport entries={entries} />} fileName="entries.pdf">
         {({ loading }) => (

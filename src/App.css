@@ -130,6 +130,7 @@ h2 {
   width: 100%;
   border-collapse: collapse;
   border-radius: 8px;
+  border-color: none;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-top: 20px;
@@ -149,6 +150,10 @@ h2 {
 
 .custom-table tr:nth-child(even) {
   background-color: #f9f9f9;
+}
+
+.custom-table tr:nth-child(odd) {
+  background-color: #ccc;
 }
 
 .custom-table tr:hover {
