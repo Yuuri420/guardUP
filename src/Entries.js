@@ -1,253 +1,130 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
-import { PDFDownloadLink, Page, Text, Document, StyleSheet, View } from '@react-pdf/renderer';
-
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'column',
-    backgroundColor: '#ffffff',
-    padding: 20,
-  },
-  header: {
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    borderBottom: 1,
-    paddingBottom: 5,
-    marginBottom: 10,
-  },
-  tableHeaderColumn: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    borderBottom: 1,
-    paddingBottom: 5,
-    marginBottom: 5,
-  },
-  tableRowColumn: {
-    flex: 1,
-    fontSize: 12,
-  },
-});
-
-
-function formatTimestamp(timestamp) {
-  const date = new Date(timestamp.seconds * 1000);
-
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-  const month = months[date.getMonth()];
-
-  const hours = date.getHours() % 12 || 12;
-  const minutes = ('0' + date.getMinutes()).slice(-2);
-  const amPm = date.getHours() >= 12 ? 'PM' : 'AM';
-
-  return `${month} ${date.getDate()}, ${date.getFullYear()} at ${hours}:${minutes} ${amPm}`;
-}
-
-function PDFReport({ entries }) {
-  return (
-    <Document>
-      <Page style={styles.page}>
-        <Text style={styles.header}>Logs History</Text>
-        <View style={styles.tableHeader}>
-          <View style={styles.tableHeaderColumn}>
-            <Text>User Email</Text>
-          </View>
-          <View style={styles.tableHeaderColumn}>
-            <Text>Building</Text>
-          </View>
-          <View style={styles.tableHeaderColumn}>
-            <Text>Timestamp</Text>
-          </View>
-        </View>
-        {entries.map((entry) => (
-          <View key={entry.id} style={styles.tableRow}>
-            <View style={styles.tableRowColumn}>
-              <Text>{entry.userEmail}</Text>
-            </View>
-            <View style={styles.tableRowColumn}>
-              <Text>{entry.buildingCode}</Text>
-            </View>
-            <View style={styles.tableRowColumn}>
-              <Text>{formatTimestamp(entry.timestamp)}</Text>
-            </View>
-          </View>
-        ))}
-      </Page>
-    </Document>
-  );
-}
-
-
-// ... (Same imports and styles)
+import { collection, getDocs, query, where, orderBy, limit, startAfter, startAt } from 'firebase/firestore';
+import { Table, Form, Pagination } from 'react-bootstrap';
 
 function Entries({ db }) {
   const [entries, setEntries] = useState([]);
   const [buildingCodeFilter, setBuildingCodeFilter] = useState('');
-  const [startDateFilter, setStartDateFilter] = useState('');
-  const [endDateFilter, setEndDateFilter] = useState('');
   const [userEmailFilter, setUserEmailFilter] = useState('');
+  const [lastVisible, setLastVisible] = useState(null);
+  const [firstVisible, setFirstVisible] = useState(null);
+  const [pageLimit, setPageLimit] = useState(25);
+  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
+  const [isPrevPageAvailable, setIsPrevPageAvailable] = useState(false);
+  const [prevPagesStack, setPrevPagesStack] = useState([]);
 
-  // ... (formatTimestamp function and PDFReport component)
+  useEffect(() => {
+    fetchEntries();
+  }, [buildingCodeFilter, userEmailFilter, pageLimit]);
 
-  // Function to fetch entries based on the current filters
-  const fetchEntries = async () => {
+  const fetchEntries = async (startAfterDoc = null, startAtDoc = null, stackUpdate = true) => {
     try {
-      const entriesRef = collection(db, 'entries');
-      let filteredQuery = query(entriesRef, orderBy('timestamp', 'desc'));
+      let entriesRef = collection(db, 'entries');
+      let q = query(entriesRef, orderBy('timestamp', 'desc'));
 
-      if (buildingCodeFilter !== '') {
-        filteredQuery = query(filteredQuery, where('buildingCode', '==', buildingCodeFilter), orderBy("timestamp", "desc"));
+      if (buildingCodeFilter) {
+        q = query(q, where('buildingCode', '>=', buildingCodeFilter), where('buildingCode', '<=', buildingCodeFilter + '\uf8ff'));
       }
 
-      if (startDateFilter !== '') {
-        const startDate = new Date(startDateFilter);
-        startDate.setHours(0, 0, 0, 0);
-        filteredQuery = query(filteredQuery, where('timestamp', '>=', startDate), orderBy("timestamp", "desc"));
+      if (userEmailFilter) {
+        q = query(q, where('userEmail', '>=', userEmailFilter), where('userEmail', '<=', userEmailFilter + '\uf8ff'));
       }
 
-      if (endDateFilter !== '') {
-        const endDate = new Date(endDateFilter);
-        endDate.setHours(23, 59, 59, 999);
-        filteredQuery = query(filteredQuery, where('timestamp', '<=', endDate), orderBy("timestamp", "desc"));
-      } else {
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 7);
-        startDate.setHours(0, 0, 0, 0);
-        filteredQuery = query(filteredQuery, where('timestamp', '>=', startDate), orderBy("timestamp", "desc"));
+      if (startAfterDoc) {
+        q = query(q, startAfter(startAfterDoc));
       }
 
-      if (userEmailFilter !== '') {
-        filteredQuery = query(filteredQuery, where('userEmail', '==', userEmailFilter), orderBy("timestamp", "desc"));
+      if (startAtDoc) {
+        q = query(q, startAt(startAtDoc));
       }
 
-      const querySnapshot = await getDocs(filteredQuery);
+      q = query(q, limit(pageLimit));
+
+      const querySnapshot = await getDocs(q);
       const entriesData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+
+      if (stackUpdate) {
+        setPrevPagesStack((prev) => [...prev, firstVisible]);
+      }
+
       setEntries(entriesData);
+      setFirstVisible(querySnapshot.docs[0]);
+      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      setIsNextPageAvailable(querySnapshot.docs.length === pageLimit);
+      setIsPrevPageAvailable(startAfterDoc !== null);
     } catch (error) {
       console.error('Error fetching entries:', error);
     }
   };
 
-  useEffect(() => {
-    fetchEntries();
-  }, [db, buildingCodeFilter, startDateFilter, endDateFilter, userEmailFilter]);
+  const handleBuildingCodeFilterChange = (e) => {
+    setBuildingCodeFilter(e.target.value);
+  };
 
+  const handleUserEmailFilterChange = (e) => {
+    setUserEmailFilter(e.target.value);
+  };
 
-  useEffect(() => {
-    if (userEmailFilter !== '') {
-      const fetchEntriesByUserEmail = async () => {
-        try {
-          const entriesRef = collection(db, 'entries');
-          const filteredQuery = query(entriesRef, where('userEmail', '==', userEmailFilter));
-          const querySnapshot = await getDocs(filteredQuery);
-          const entriesData = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setEntries(entriesData);
-        } catch (error) {
-          console.error('Error fetching entries:', error);
-        }
-      };
+  const handleNextPage = () => {
+    fetchEntries(lastVisible);
+  };
 
-      fetchEntriesByUserEmail();
-    } else {
-      fetchEntries();
-    }
-  }, [db, userEmailFilter]);
-
-  const allBuildingCodes = [...new Set(entries.map((entry) => entry.buildingCode))];
-  const allUserEmails = [...new Set(entries.map((entry) => entry.userEmail))];
+  const handlePrevPage = () => {
+    const previousPage = prevPagesStack[prevPagesStack.length - 1];
+    setPrevPagesStack((prev) => prev.slice(0, prev.length - 1));
+    fetchEntries(null, previousPage, false);
+  };
 
   return (
     <div>
-      <h2 className="pageTitle">Logs</h2>
-      <p style={{ marginTop: '0' }}>{entries.length} logs found</p>
-      <div>
-        <label>
-          Building:
-          <select value={buildingCodeFilter} onChange={(e) => setBuildingCodeFilter(e.target.value)}>
-            <option value="">All</option>
-            {allBuildingCodes.map((code) => (
-              <option key={code} value={code}>
-                {code}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Start Date:
-          <input type="date" value={startDateFilter} onChange={(e) => setStartDateFilter(e.target.value)} />
-        </label>
-        <label>
-          End Date:
-          <input type="date" value={endDateFilter} onChange={(e) => setEndDateFilter(e.target.value)} />
-        </label>
-        <label>
-          User Email
-          <input type="text" value={userEmailFilter} onChange={(e) => setUserEmailFilter(e.target.value)}/>
-        </label>
-        {/* <label>
-          User Email:
-          <select value={userEmailFilter} onChange={(e) => setUserEmailFilter(e.target.value)}>
-            <option value="">All</option>
-            {allUserEmails.map((email) => (
-              <option key={email} value={email}>
-                {email}
-              </option>
-            ))}
-          </select>
-        </label> */}
-        <button onClick={fetchEntries}>Apply Filters</button>
-        <PDFDownloadLink document={<PDFReport entries={entries} />} fileName="entries.pdf">
-        {({ loading }) => (
-          <button
-            style={{
-              backgroundColor: '#991232',
-              color: 'white',
-              borderRadius: '10px',
-              padding: '5px 10px',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : 'Export to PDF'}
-          </button>
-        )}
-      </PDFDownloadLink>
-      </div>
-      <table className="custom-table">
+      <h2 className="pageTitle">Entries</h2>
+      <Form>
+        <Form.Group controlId="buildingCodeFilter">
+          <Form.Label>Building Code Filter</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter building code"
+            value={buildingCodeFilter}
+            onChange={handleBuildingCodeFilterChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="userEmailFilter">
+          <Form.Label>User Email Filter</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter user email"
+            value={userEmailFilter}
+            onChange={handleUserEmailFilterChange}
+          />
+        </Form.Group>
+      </Form>
+      <Table striped bordered hover className="custom-table">
         <thead>
           <tr>
-            <th>User Email</th>
-            <th>Building</th>
             <th>Timestamp</th>
+            <th>Building Code</th>
+            <th>User Email</th>
           </tr>
         </thead>
         <tbody>
           {entries.map((entry) => (
             <tr key={entry.id}>
-              <td>{entry.userEmail}</td>
+              <td>{new Date(entry.timestamp.toDate()).toLocaleString()}</td>
               <td>{entry.buildingCode}</td>
-              <td>{formatTimestamp(entry.timestamp)}</td>
+              <td>{entry.userEmail}</td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
+      <div className="d-flex justify-content-center">
+        <Pagination>
+          <Pagination.Prev onClick={handlePrevPage} disabled={!isPrevPageAvailable} />
+          <Pagination.Next onClick={handleNextPage} disabled={!isNextPageAvailable} />
+        </Pagination>
+      </div>
     </div>
   );
 }

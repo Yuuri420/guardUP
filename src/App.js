@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Link, Routes, Route, Navigate, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, NavLink } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore'; 
+import { getFirestore } from 'firebase/firestore';
+import { FaUsers, FaClipboardList, FaFileAlt } from 'react-icons/fa';
 import './App.css';
 import Reports from './Reports';
-import Users from './Users'; 
+import Users from './Users';
 import Entries from './Entries';
 import admin from './admin.png';
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyAPkEij3DdYuKo3hWvnuWBRZ5uP5JW-HvA",
@@ -19,7 +19,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app); 
+const db = getFirestore(app);
 
 function App() {
   const [activeMenuItem, setActiveMenuItem] = useState('/users');
@@ -35,35 +35,35 @@ function App() {
           <div className="logo">
             <img src={admin} alt="Logo" width="80" />
           </div>
-          <p className="hello-admin">Hello, Admin!</p> 
+          <p className="hello-admin">Hello, Admin!</p>
           <h1>Guard UP</h1>
           <nav>
             <ul>
               <li>
                 <NavLink 
                   to="/users" 
-                  activeClassName="active" // Add the activeClassName here
-                  onClick={() => handleMenuItemClick('/users')} // Add onClick to handle the active menu item
+                  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                  onClick={() => handleMenuItemClick('/users')}
                 >
-                  Users
+                  <FaUsers className="nav-icon" /> Users
                 </NavLink>
               </li>
               <li>
                 <NavLink 
                   to="/entries" 
-                  activeClassName="active" // Add the activeClassName here
-                  onClick={() => handleMenuItemClick('/entries')} // Add onClick to handle the active menu item
+                  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                  onClick={() => handleMenuItemClick('/entries')}
                 >
-                  Logs
+                  <FaClipboardList className="nav-icon" /> Logs
                 </NavLink>
               </li>
               <li>
                 <NavLink 
                   to="/reports" 
-                  activeClassName="active" // Add the activeClassName here
-                  onClick={() => handleMenuItemClick('/reports')} // Add onClick to handle the active menu item
+                  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                  onClick={() => handleMenuItemClick('/reports')}
                 >
-                  Reports
+                  <FaFileAlt className="nav-icon" /> Reports
                 </NavLink>
               </li>
             </ul>
@@ -72,9 +72,9 @@ function App() {
         <main className="content">
           <Routes>
             <Route path="/" element={<Navigate to="/users" />} />
-            <Route path="/users" element={<Users db={db} />} /> 
-            <Route path="/entries" element={<Entries db={db} />} /> 
-            <Route path="/reports" element={<Reports db={db} />} /> 
+            <Route path="/users" element={<Users db={db} />} />
+            <Route path="/entries" element={<Entries db={db} />} />
+            <Route path="/reports" element={<Reports db={db} />} />
           </Routes>
         </main>
       </div>
@@ -84,10 +84,3 @@ function App() {
 
 export { app };
 export default App;
-
-
-
-
-
-
-

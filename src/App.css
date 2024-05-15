@@ -1,19 +1,17 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-
 
 .App {
   display: flex;
   min-height: 100vh;
-  font-family: 'Poppins', sans-serif; 
+  font-family: 'Poppins', sans-serif;
   color: #333333;
+  background-color: #f9f9f9;
 }
 
 body {
-  margin: 0; /* Remove default body margin */
-  background-color: #f9f9f9; /* Set the background color for the whole web app */
+  margin: 0;
+  background-color: #f9f9f9;
 }
-
 
 .menu-panel {
   width: 220px;
@@ -28,96 +26,79 @@ body {
   bottom: 0;
   box-shadow: -5px 0 10px rgba(0, 0, 0, 0.1);
 }
-/* Style for the "Guard UP" title and logo */
+
 .logo-user-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px; 
+  margin-bottom: 20px;
 }
 
 .logo {
-  margin-bottom: 10px; 
+  margin-bottom: 10px;
 }
 
-
 .logo img {
-  width: 100px; 
-  filter: brightness(0) invert(1); 
+  width: 100px;
+  filter: brightness(0) invert(1);
 }
 
 h1 {
   text-align: center;
   color: #ffffff;
-  font-family: 'Poppins', sans-serif; 
   font-size: 36px;
   font-weight: 700;
-  margin-top: 0; 
+  margin-top: 0;
 }
 
 .hello-admin {
-  color: #ffffff; 
-  font-family: 'Poppins', sans-serif; 
+  color: #ffffff;
   font-size: 18px;
-  margin-top: 0; 
+  margin-top: 0;
 }
-
-.pageTitle {
-  font-size: 32px; /* Adjust the font size as needed */
-  font-family: 'Poppins', sans-serif; /* Change the font family as desired */
-  font-weight: bold;
-  color: #333; /* Change the color to match your web UI */
-  margin-bottom: 0px; /* Add some spacing between the heading and the content */
-}
-
 
 nav ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
+  width: 100%;
 }
 
 nav li {
   margin-bottom: 10px;
+  width: 100%;
 }
 
-nav a {
-  display: block;
-  padding: 8px 80px;
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
   color: #f5f5f5;
   text-decoration: none;
   font-weight: bold;
   font-size: 18px;
-  transition: margin-right 2s ease-in-out;
   border-radius: 7px;
-  background-color: transparent; /* Set the initial background color to transparent */
-  position: relative; /* Add this to make the position relative */
+  transition: background-color 0.3s, color 0.3s;
 }
 
-nav a:hover,
-nav a.active {
-  background-color: #393939; /* Set the background color to match the content background */
-  box-shadow: none; /* Remove the box shadow on hover */
-  color: #f5f5f5; /* Set the color to pink */
-  /* right: -20px; Adjust the value to extend to the right */
-  /* padding-right: 105px; Increase the right padding to spread out the background */
+.nav-link .nav-icon {
+  margin-right: 10px;
 }
 
-
+.nav-link:hover,
+.nav-link.active {
+  background-color: #393939;
+  color: #ffffff;
+}
 
 .content {
   flex: 1;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: right;
-  overflow-y: auto;
   margin-left: 270px;
   margin-top: 40px;
-  background-color: #f9f9f9; /* Set the background color to match your web UI */
+  background-color: #f9f9f9;
+  overflow-y: auto;
 }
-
-
 
 h2 {
   margin-bottom: 20px;
@@ -125,12 +106,10 @@ h2 {
   color: #000000;
 }
 
-
 .custom-table {
   width: 100%;
   border-collapse: collapse;
   border-radius: 8px;
-  border-color: none;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-top: 20px;
@@ -168,12 +147,11 @@ h2 {
   .menu-panel {
     width: 100%;
     margin-bottom: 20px;
-    position: static; 
-    flex: 0 0 auto; 
+    position: static;
   }
 
   .content {
     padding: 0;
-    margin-left: 0; 
+    margin-left: 0;
   }
 }
